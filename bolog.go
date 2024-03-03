@@ -2,6 +2,7 @@ package bolog
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -23,6 +24,7 @@ type ConfigLogger struct {
 // Logger is a wrapper around lumberjack.Logger.
 type Logger struct {
 	lumberjack.Logger
+	config ConfigLogger
 }
 
 // InitializeLoggerFromConfig reads a configuration file and initializes a logger.
@@ -53,7 +55,15 @@ func SetupLogger(config ConfigLogger) *Logger {
 			MaxAge:     config.MaxAge,
 			Compress:   config.Compress,
 		},
+		config: config,
 	}
+}
+
+// Logf logs a formatted message with the current time and timezone from the configuration.
+func (l *Logger) Logf(format string, v ...interface{}) {
+	currentTime := time.Now().In(getTimezone(l.config.Timezone))
+	message := fmt.Sprintf("[%s] "+format, append([]interface{}{currentTime.Format("2006-01-02 15:04:05")}, v...)...)
+	l.Write([]byte(message + "\n"))
 }
 
 // getLogFileName generates a log file name based on the current date and timezone.

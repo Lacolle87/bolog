@@ -62,8 +62,11 @@ func SetupLogger(config ConfigLogger) *Logger {
 // Logf logs a formatted message with the current time and timezone from the configuration.
 func (l *Logger) Logf(format string, v ...interface{}) {
 	currentTime := time.Now().In(getTimezone(l.config.Timezone))
-	message := fmt.Sprintf("[%s] "+format, append([]interface{}{currentTime.Format("2006-01-02 15:04:05")}, v...)...)
-	l.Write([]byte(message + "\n"))
+	message := fmt.Sprintf("[%s] -- "+format, append([]interface{}{currentTime.Format("2006-01-02 15:04:05")}, v...)...)
+
+	if _, err := l.Write([]byte(message + "\n")); err != nil {
+		log.Printf("Error writing log: %v", err)
+	}
 }
 
 // getLogFileName generates a log file name based on the current date and timezone.
